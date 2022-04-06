@@ -92,6 +92,9 @@ func (sh *ScalerJobHPA) Run() (msg string, err error) {
 		if err == nil {
 			break
 		}
+		if _, ok := err.(*NoNeedUpdate); !ok {
+			break
+		}
 		time.Sleep(updateRetryInterval)
 		times = times + 1
 	}
@@ -123,7 +126,7 @@ func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 		if desired < replicas {
 			msg = fmt.Sprintf("replicas is %d, desired is %d, scaling down", replicas, desired)
 		} else {
-			return "noting to do", nil
+			return "noting to do", &NoNeedUpdate{}
 		}
 	}
 	sh.desiredReplicas = desired
