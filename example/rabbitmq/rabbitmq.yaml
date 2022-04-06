@@ -1,0 +1,23 @@
+apiVersion: k8s.q1.com/v1
+kind: HPAScaler
+metadata:
+  namespace: default
+  name: rabbitmq-hpa-test
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: nginx
+  plugin:
+    type: rabbitmq
+    url: "amqp://guest:gues@localhost:5672/"
+    config:
+      queue: "test"
+  freq: 1s
+  maxReplicas: 60
+  minReplicas: 1
+  scaleUp:
+    threshold: 3
+    amount: 10
+  scaleDown:
+    threshold: 0
+    amount: 3

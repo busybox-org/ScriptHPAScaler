@@ -1,0 +1,15 @@
+domain: k8s.q1.com
+layout:
+- go.kubebuilder.io/v3
+projectName: supersetscalers
+repo: github.com/xmapst/supersetscalers
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.q1.com
+  kind: HPAScaler
+  path: github.com/xmapst/supersetscalers/api/v1
+  version: v1
+version: "3"

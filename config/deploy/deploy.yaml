@@ -1,0 +1,56 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supersetscaler-controller
+  namespace: kube-system
+  labels:
+    app: supersetscaler-controller
+spec:
+  selector:
+    matchLabels:
+      app: supersetscaler-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: supersetscaler-controller
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - command:
+        - /manager
+        image: supersetscaler-controller:latest
+        imagePullPolicy: IfNotPresent
+        name: supersetscaler-controller
+        env:
+          - name: TZ
+            value: "Asia/Shanghai"
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+      serviceAccountName: supersetscaler
+      terminationGracePeriodSeconds: 10
