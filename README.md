@@ -36,6 +36,16 @@ supersetscaler-controller         1         1         1            1           4
 # 例子
 请试用[示例文件夹中的示例](https://github.com/xmapst/SupersetScalers/tree/main/example)。
 
+# Plugin
+- [x] rabbitmq
+- [ ] rocketmq
+- [ ] kafka
+- [ ] redis
+- [ ] http
+- [ ] shell
+- [ ] python
+- [ ] lua
+
 # Makefile help
 ```text
 Usage:
