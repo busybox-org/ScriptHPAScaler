@@ -89,7 +89,7 @@ func (r *HPAScalerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	// update the status
 	if needUpdateStatus {
 		instance.Status.Condition = condition
-		err = r.ScalerManager.updateStatusWithRetry(instance)
+		err = r.ScalerManager.updateStatus(instance)
 		if err != nil {
 			log.Errorf("failed to update status of HPAScaler %s in %s namespace,because of %v", req.Name, req.Namespace, err)
 			return ctrl.Result{}, err

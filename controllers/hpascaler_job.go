@@ -92,7 +92,7 @@ func (sh *ScalerJobHPA) Run() (msg string, err error) {
 		if err == nil {
 			break
 		}
-		if _, ok := err.(*NoNeedUpdate); !ok {
+		if _, ok := err.(*NoNeedUpdate); ok {
 			break
 		}
 		time.Sleep(updateRetryInterval)

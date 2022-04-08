@@ -181,51 +181,45 @@ func (sm *ScalerManager) CreateOrUpdate(job ScalerJob) error {
 
 // ResultHandler is a function that is called when a cron job's execution
 func (sm *ScalerManager) resultHandler(js *cron.JobResult) {
-	job, ok := js.Ref.(*ScalerJobHPA)
-	if !ok {
-		log.Errorf("job result handler failed")
-		return
-	}
-	instance := &k8sq1comv1.HPAScaler{}
-	err := sm.client.Get(context.TODO(), types.NamespacedName{
-		Namespace: job.Namespace(),
-		Name:      job.Name(),
-	}, instance)
-	if err != nil {
-		log.Errorf("job result handler failed, get instance failed, err: %v", err)
-		return
-	}
-	err = js.Error
-	if err != nil {
-		instance.Status.Condition.Status = "Failed"
-		instance.Status.Condition.Message = err.Error()
-	} else {
-		instance.Status.Condition.Status = "Succeeded"
-		instance.Status.Condition.Message = js.Msg
-	}
-	if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
-		return
-	}
-	instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
-	err = sm.updateStatusWithRetry(instance)
-	if err != nil {
-		log.Errorf("job result handler failed, update instance status failed, err: %v", err)
-		sm.eventRecorder.Event(instance, v1.EventTypeWarning, "Failed", fmt.Sprintf("Failed to update HPAScaler status: %v", err))
-	} else {
-		sm.eventRecorder.Event(instance, v1.EventTypeNormal, "Succeeded", fmt.Sprintf("Success to update HPAScaler status"))
-	}
-}
-
-func (sm *ScalerManager) updateStatusWithRetry(item *k8sq1comv1.HPAScaler) error {
-	var err error
 	for i := 0; i < MaxRetryTimes; i++ {
-		err = sm.updateStatus(item)
-		if err == nil {
-			return nil
+		job, ok := js.Ref.(*ScalerJobHPA)
+		if !ok {
+			log.Errorf("job result handler failed")
+			break
 		}
-		log.Errorf("update HPAScaler failed, err: %v", err)
+		instance := &k8sq1comv1.HPAScaler{}
+		err := sm.client.Get(context.TODO(), types.NamespacedName{
+			Namespace: job.Namespace(),
+			Name:      job.Name(),
+		}, instance)
+		if err != nil {
+			log.Errorf("job result handler failed, get instance failed, err: %v", err)
+			continue
+		}
+		instance.Status.Condition.Status = k8sq1comv1.Succeed
+		instance.Status.Condition.Message = js.Msg
+
+		err = js.Error
+		if err != nil {
+			if _, ok := err.(*NoNeedUpdate); ok {
+				break
+			}
+			instance.Status.Condition.Status = k8sq1comv1.Failed
+			instance.Status.Condition.Message = err.Error()
+		}
+		if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
+			break
+		}
+		instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
+		err = sm.updateStatus(instance)
+		if err != nil {
+			log.Errorf("job result handler failed, update instance status failed, err: %v", err)
+			sm.eventRecorder.Event(instance, v1.EventTypeWarning, "Warning", fmt.Sprintf("Can't update HPAScaler status: %v", err))
+		} else {
+			sm.eventRecorder.Eventf(instance, v1.EventTypeNormal, "Normal", "Updated HPAScaler status: %s", instance.Status.Condition.Message)
+			break
+		}
 	}
-	return err
 }
 
 func (sm *ScalerManager) updateStatus(item *k8sq1comv1.HPAScaler) error {
