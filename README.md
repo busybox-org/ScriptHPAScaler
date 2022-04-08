@@ -7,7 +7,7 @@
  # 安装
 1. 安装CRD
 ```bash
-kubectl apply -f config/crds/k8s.q1.com_hpascalers.yaml
+kubectl apply -f config/crd/k8s.q1.com_hpascalers.yaml
 ```
 2. 安装`RBAC`
 ```bash
