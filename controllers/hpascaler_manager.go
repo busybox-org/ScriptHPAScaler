@@ -206,19 +206,18 @@ func (sm *ScalerManager) resultHandler(js *cron.JobResult) {
 			}
 			instance.Status.Condition.Status = k8sq1comv1.Failed
 			instance.Status.Condition.Message = err.Error()
-		}
-		if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
-			break
-		}
-		instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
-		err = sm.updateStatus(instance)
-		if err != nil {
-			log.Errorf("job result handler failed, update instance status failed, err: %v", err)
-			sm.eventRecorder.Event(instance, v1.EventTypeWarning, "Warning", fmt.Sprintf("Can't update HPAScaler status: %v", err))
 		} else {
-			sm.eventRecorder.Eventf(instance, v1.EventTypeNormal, "Normal", "Updated HPAScaler status: %s", instance.Status.Condition.Message)
+			if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
+				break
+			}
+			instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
+		}
+		err = sm.updateStatus(instance)
+		if err == nil {
 			break
 		}
+		log.Errorf("job result handler failed, update instance status failed, err: %v", err)
+		sm.eventRecorder.Event(instance, v1.EventTypeWarning, "Warning", fmt.Sprintf("Can't update HPAScaler status: %v", err))
 	}
 }
 

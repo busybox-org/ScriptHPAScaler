@@ -102,11 +102,15 @@ func (sh *ScalerJobHPA) Run() (msg string, err error) {
 }
 
 func (sh *ScalerJobHPA) Scale() (msg string, err error) {
+	replicas, err := sh.getReplicas()
+	if err != nil || replicas == 0 {
+		return "replicas is 0, skip", err
+	}
+
 	plugin := plugins.GetPlugin(sh.hpaSpec.Plugin.Type)
 	if plugin == nil {
 		return "", fmt.Errorf("plugin %s not found", sh.hpaSpec.Plugin.Type)
 	}
-	log.Infof("plugin %s description: %s", plugin.Name(), plugin.Description())
 	err = plugin.Init(sh.hpaSpec.Plugin.Url, sh.hpaSpec.Plugin.Config)
 	if err != nil {
 		return "", fmt.Errorf("failed to init plugin %s, %v", sh.hpaSpec.Plugin.Type, err)
@@ -114,10 +118,6 @@ func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 	ready, err := plugin.Run()
 	if err != nil {
 		return "", fmt.Errorf("failed to run plugin %s, because of %v", sh.hpaSpec.Plugin.Type, err)
-	}
-	replicas, err := sh.getReplicas()
-	if err != nil || replicas == 0 {
-		return "replicas is 0, skip", err
 	}
 
 	desired := sh.targetReplicas(ready, replicas)

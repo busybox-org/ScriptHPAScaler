@@ -32,6 +32,10 @@ func (h *HttpPlugin) Description() string {
 
 func (h *HttpPlugin) Init(uri string, config k8sq1comv1.Config) error {
 	h.uri = uri
+	err := plugins.MapToStruct(config, h)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
