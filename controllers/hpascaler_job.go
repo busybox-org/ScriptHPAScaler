@@ -106,6 +106,7 @@ func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 	if err != nil || replicas == 0 {
 		return "replicas is 0, skip", err
 	}
+	sh.desiredReplicas = replicas
 
 	plugin := plugins.GetPlugin(sh.hpaSpec.Plugin.Type)
 	if plugin == nil {
@@ -135,7 +136,8 @@ func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 		if desired < replicas {
 			msg = fmt.Sprintf("replicas is %d, desired is %d, scaling down", replicas, desired)
 		} else {
-			return "noting to do", &NoNeedUpdate{}
+			// no need update
+			return "", nil
 		}
 	}
 	sh.desiredReplicas = desired

@@ -201,17 +201,13 @@ func (sm *ScalerManager) resultHandler(js *cron.JobResult) {
 
 		err = js.Error
 		if err != nil {
-			if _, ok := err.(*NoNeedUpdate); ok {
-				break
-			}
 			instance.Status.Condition.Status = k8sq1comv1.Failed
 			instance.Status.Condition.Message = err.Error()
-		} else {
-			if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
-				break
-			}
-			instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
 		}
+		if instance.Status.Condition.DesiredReplicas == job.DesiredReplicas() {
+			break
+		}
+		instance.Status.Condition.DesiredReplicas = job.DesiredReplicas()
 		err = sm.updateStatus(instance)
 		if err == nil {
 			break
