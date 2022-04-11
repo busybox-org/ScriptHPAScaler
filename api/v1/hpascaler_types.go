@@ -61,10 +61,12 @@ type ScaleTargetRef struct {
 }
 
 type Plugin struct {
-	Type   string            `json:"type"`
-	Url    string            `json:"url"`
-	Config map[string]string `json:"config,omitempty"`
+	Type   string `json:"type"`
+	Url    string `json:"url"`
+	Config Config `json:"config,omitempty"`
 }
+
+type Config map[string]string
 
 type Scale struct {
 	Threshold int64 `json:"threshold,omitempty"` // 触发临界值

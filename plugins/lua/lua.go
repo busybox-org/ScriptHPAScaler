@@ -24,6 +24,10 @@ func (l *LuaPlugin) Description() string {
 	return "从lua脚本获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (l *LuaPlugin) Run(plugin *k8sq1comv1.Plugin) (int64, error) {
+func (l *LuaPlugin) Init(uri string, config k8sq1comv1.Config) error {
+	return nil
+}
+
+func (l *LuaPlugin) Run() (int64, error) {
 	return 0, nil
 }

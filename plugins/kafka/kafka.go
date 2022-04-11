@@ -6,6 +6,7 @@ import (
 )
 
 type KafkaPlugin struct {
+	uri string
 }
 
 const name = "kafka"
@@ -24,6 +25,11 @@ func (k *KafkaPlugin) Description() string {
 	return "从kafka获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (k *KafkaPlugin) Run(plugin *k8sq1comv1.Plugin) (int64, error) {
+func (k *KafkaPlugin) Init(uri string, config k8sq1comv1.Config) error {
+	k.uri = uri
+	return nil
+}
+
+func (k *KafkaPlugin) Run() (int64, error) {
 	return 0, nil
 }

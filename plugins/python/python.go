@@ -24,6 +24,10 @@ func (p *PythonPlugin) Description() string {
 	return "从python脚本获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (p *PythonPlugin) Run(plugin *k8sq1comv1.Plugin) (int64, error) {
+func (p *PythonPlugin) Init(uri string, config k8sq1comv1.Config) error {
+	return nil
+}
+
+func (p *PythonPlugin) Run() (int64, error) {
 	return 0, nil
 }

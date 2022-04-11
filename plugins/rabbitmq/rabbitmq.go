@@ -1,11 +1,15 @@
 package rabbitmq
 
 import (
+	"github.com/streadway/amqp"
 	k8sq1comv1 "github.com/xmapst/supersetscalers/api/v1"
 	"github.com/xmapst/supersetscalers/plugins"
+	"strings"
 )
 
 type RabbitMQPlugin struct {
+	uri   string // RabbitMQ URI
+	Queue string `json:"queue,required"`
 }
 
 const name = "rabbitmq"
@@ -16,14 +20,40 @@ func init() {
 	})
 }
 
-func (mq *RabbitMQPlugin) Name() string {
+func (r *RabbitMQPlugin) Name() string {
 	return name
 }
 
-func (mq *RabbitMQPlugin) Description() string {
+func (r *RabbitMQPlugin) Description() string {
 	return "使用 AMQP 队列的长度（可从队列中检索的消息数）动态扩展 kubernetes 资源"
 }
 
-func (mq *RabbitMQPlugin) Run(plugin *k8sq1comv1.Plugin) (int64, error) {
-	return getQueueLength(plugin.Url, plugin.Config["queue"])
+func (r *RabbitMQPlugin) Init(uri string, config k8sq1comv1.Config) error {
+	err := plugins.MapToStruct(config, r)
+	if err != nil {
+		return err
+	}
+	r.uri = uri
+	return nil
+}
+
+func (r *RabbitMQPlugin) Run() (int64, error) {
+	if strings.HasPrefix(r.uri, "http") {
+		return r.getQueueLengthFromAPI()
+	}
+	conn, err := amqp.Dial(r.uri)
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+	ch, err := conn.Channel()
+	if err != nil {
+		return 0, err
+	}
+	defer ch.Close()
+	q, err := ch.QueueInspect(r.Queue)
+	if err != nil {
+		return 0, err
+	}
+	return int64(q.Messages), nil
 }
