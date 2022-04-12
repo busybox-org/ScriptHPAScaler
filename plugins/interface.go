@@ -5,7 +5,7 @@ import k8sq1comV1 "github.com/xmapst/supersetscalers/api/v1"
 type Plugin interface {
 	Name() string
 	Description() string
-	Init(uri string, config k8sq1comV1.Config) error
+	Init(config k8sq1comV1.Config) error
 	Run() (int64, error)
 }
 

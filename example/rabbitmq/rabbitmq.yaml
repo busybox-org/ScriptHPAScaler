@@ -6,11 +6,11 @@ metadata:
 spec:
   scaleTargetRef:
     kind: Deployment
-    name: nginx
+    name: ubuntu
   plugin:
     type: rabbitmq
-    url: "amqp://guest:gues@localhost:5672/"
     config:
+      url: "amqp://admin:123456@172.18.99.248:5672/"
       queue: "test"
   freq: 1s
   maxReplicas: 60

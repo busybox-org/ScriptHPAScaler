@@ -14,7 +14,7 @@ type APIQueueInfo struct {
 
 func (r *RabbitMQPlugin) getQueueLengthFromAPI() (int64, error) {
 	apiQueueInfo := APIQueueInfo{}
-	err := r.doApiRequest(r.uri, &apiQueueInfo)
+	err := r.doApiRequest(r.Url, &apiQueueInfo)
 	if err != nil {
 		log.Errorf("Error getting queue length from API: %s", err)
 		return 0, err
@@ -32,6 +32,7 @@ func (r *RabbitMQPlugin) doApiRequest(uri string, apiQueueInfo *APIQueueInfo) er
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	reader := new(bytes.Buffer)
 	_, _ = reader.ReadFrom(resp.Body)
 	return json.Unmarshal(reader.Bytes(), &apiQueueInfo)

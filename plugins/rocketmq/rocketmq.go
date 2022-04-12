@@ -24,7 +24,7 @@ func (r *RocketMQPlugin) Description() string {
 	return "从rocketmq获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (r *RocketMQPlugin) Init(uri string, config k8sq1comv1.Config) error {
+func (r *RocketMQPlugin) Init(config k8sq1comv1.Config) error {
 	return nil
 }
 

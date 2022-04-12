@@ -62,7 +62,6 @@ type ScaleTargetRef struct {
 
 type Plugin struct {
 	Type   string `json:"type"`
-	Url    string `json:"url"`
 	Config Config `json:"config,omitempty"`
 }
 

@@ -6,6 +6,7 @@ import (
 )
 
 type RedisPlugin struct {
+	Key string `json:"key"`
 }
 
 const name = "redis"
@@ -24,7 +25,7 @@ func (r *RedisPlugin) Description() string {
 	return "从redis获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (r *RedisPlugin) Init(uri string, config k8sq1comv1.Config) error {
+func (r *RedisPlugin) Init(config k8sq1comv1.Config) error {
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 type RabbitMQPlugin struct {
-	uri   string // RabbitMQ URI
+	Url   string `json:"url,required"`
 	Queue string `json:"queue,required"`
 }
 
@@ -28,20 +28,22 @@ func (r *RabbitMQPlugin) Description() string {
 	return "使用 AMQP 队列的长度（可从队列中检索的消息数）动态扩展 kubernetes 资源"
 }
 
-func (r *RabbitMQPlugin) Init(uri string, config k8sq1comv1.Config) error {
+func (r *RabbitMQPlugin) Init(config k8sq1comv1.Config) error {
 	err := plugins.MapToStruct(config, r)
 	if err != nil {
 		return err
 	}
-	r.uri = uri
+	if r.Url == "" || r.Queue == "" {
+		return plugins.ErrInvalidConfig
+	}
 	return nil
 }
 
 func (r *RabbitMQPlugin) Run() (int64, error) {
-	if strings.HasPrefix(r.uri, "http") {
+	if strings.HasPrefix(r.Url, "http") {
 		return r.getQueueLengthFromAPI()
 	}
-	conn, err := amqp.Dial(r.uri)
+	conn, err := amqp.Dial(r.Url)
 	if err != nil {
 		return 0, err
 	}

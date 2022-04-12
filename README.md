@@ -41,7 +41,7 @@ supersetscaler-controller         1         1         1            1           4
 - [ ] rocketmq
 - [ ] kafka
 - [ ] redis
-- [ ] http
+- [x] http
 - [ ] shell
 - [ ] python
 - [ ] lua

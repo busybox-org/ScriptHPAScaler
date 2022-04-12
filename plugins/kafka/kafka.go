@@ -25,8 +25,7 @@ func (k *KafkaPlugin) Description() string {
 	return "从kafka获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (k *KafkaPlugin) Init(uri string, config k8sq1comv1.Config) error {
-	k.uri = uri
+func (k *KafkaPlugin) Init(config k8sq1comv1.Config) error {
 	return nil
 }
 

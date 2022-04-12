@@ -112,7 +112,7 @@ func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 	if plugin == nil {
 		return "", fmt.Errorf("plugin %s not found", sh.hpaSpec.Plugin.Type)
 	}
-	err = plugin.Init(sh.hpaSpec.Plugin.Url, sh.hpaSpec.Plugin.Config)
+	err = plugin.Init(sh.hpaSpec.Plugin.Config)
 	if err != nil {
 		return "", fmt.Errorf("failed to init plugin %s, %v", sh.hpaSpec.Plugin.Type, err)
 	}

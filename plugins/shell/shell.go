@@ -24,7 +24,7 @@ func (s *ShellPlugin) Description() string {
 	return "从shell脚本获取阈值进行动态扩展 kubernetes 资源"
 }
 
-func (s *ShellPlugin) Init(uri string, config k8sq1comv1.Config) error {
+func (s *ShellPlugin) Init(config k8sq1comv1.Config) error {
 	return nil
 }
 
