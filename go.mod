@@ -1,13 +1,14 @@
 module github.com/xmapst/supersetscalers
 
-go 1.17
+go 1.18
 
 require (
+	github.com/google/uuid v1.1.2
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/ringtail/go-cron v1.0.1-0.20201027122514-cfb21c105f50
-	github.com/streadway/amqp v1.0.0
+	github.com/yuin/gopher-lua v0.0.0-20220413183635-c841877397d8
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
 	k8s.io/client-go v0.23.0
@@ -36,7 +37,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/uuid v1.1.2 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect

@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrInvalidConfig = errors.New("invalid config")
+	ErrProtocol      = errors.New("protocol error")
 	json             = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 

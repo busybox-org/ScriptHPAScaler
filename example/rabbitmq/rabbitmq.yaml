@@ -10,7 +10,7 @@ spec:
   plugin:
     type: rabbitmq
     config:
-      url: "amqp://admin:123456@172.18.99.248:5672/"
+      url: "http://admin:123456@172.18.99.248:15672/"
       queue: "test"
   freq: 1s
   maxReplicas: 60

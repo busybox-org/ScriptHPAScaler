@@ -104,24 +104,28 @@ func (sh *ScalerJobHPA) Run() (msg string, err error) {
 func (sh *ScalerJobHPA) Scale() (msg string, err error) {
 	replicas, err := sh.getReplicas()
 	if err != nil || replicas == 0 {
+		log.Errorf("failed to get replicas for %s in %s namespace,because of %v", sh.name, sh.namespace, err)
 		return "replicas is 0, skip", err
 	}
 	sh.desiredReplicas = replicas
 
 	plugin := plugins.GetPlugin(sh.hpaSpec.Plugin.Type)
 	if plugin == nil {
+		log.Errorf("failed to get plugin for %s in %s namespace,because of %v", sh.name, sh.namespace, err)
 		return "", fmt.Errorf("plugin %s not found", sh.hpaSpec.Plugin.Type)
 	}
 	err = plugin.Init(sh.hpaSpec.Plugin.Config)
 	if err != nil {
+		log.Errorf("failed to init plugin for %s in %s namespace,because of %v", sh.name, sh.namespace, err)
 		return "", fmt.Errorf("failed to init plugin %s, %v", sh.hpaSpec.Plugin.Type, err)
 	}
-	ready, err := plugin.Run()
+	total, err := plugin.Run()
 	if err != nil {
+		log.Errorf("failed to run plugin for %s in %s namespace,because of %v", sh.name, sh.namespace, err)
 		return "", fmt.Errorf("failed to run plugin %s, because of %v", sh.hpaSpec.Plugin.Type, err)
 	}
-
-	desired := sh.targetReplicas(ready, replicas)
+	//log.Infof("%s/%s plugin %s run result: %d", sh.namespace, sh.name, sh.hpaSpec.Plugin.Type, total)
+	desired := sh.targetReplicas(total, replicas)
 	// If the number of instances calculated this time is greater than the current number of instances,
 	// the expansion will be triggered immediately,but the scaling will not be triggered
 	// immediately if the number of instances is lower than the current number of instances.
@@ -155,7 +159,7 @@ func (sh *ScalerJobHPA) stabilizeRecommendation(prenormalizedDesiredReplicas int
 	// default stabilization window is 3 minutes.
 	downscaleStabilisationWindow, err := time.ParseDuration(sh.hpaSpec.DownscaleStabilisationWindow)
 	if err != nil {
-		downscaleStabilisationWindow = 3 * time.Minute
+		downscaleStabilisationWindow = 5 * time.Minute
 	}
 	// if downscaleStabilisationWindow more than 15 time.Minute, use default value instead.
 	if downscaleStabilisationWindow > 15*time.Minute {
@@ -212,7 +216,7 @@ func (sh *ScalerJobHPA) updateReplicas() error {
 	if err != nil {
 		return err
 	}
-	log.Infof("update replicas success, new replicas: %d", newScale.Spec.Replicas)
+	log.Infof("%s/%s update replicas success, new replicas: %d", newScale.GetNamespace(), newScale.GetName(), newScale.Spec.Replicas)
 	return nil
 }
 
@@ -239,15 +243,15 @@ func (sh *ScalerJobHPA) generateGroupResource() (groupResource schema.GroupResou
 
 // targetReplicas returns the desired replicas of a given pod,
 // based on its current size.
-func (sh *ScalerJobHPA) targetReplicas(ready int64, replicas int32) (desired int32) {
-	if ready >= sh.hpaSpec.ScaleUp.Threshold && replicas < sh.hpaSpec.MaxReplicas {
+func (sh *ScalerJobHPA) targetReplicas(total int64, replicas int32) (desired int32) {
+	if total >= sh.hpaSpec.ScaleUp.Threshold && replicas < sh.hpaSpec.MaxReplicas {
 		// calculate the number of expansions required, try to process them at once.
-		max := ready / int64(sh.hpaSpec.ScaleUp.Amount)
-		if ready%int64(sh.hpaSpec.ScaleUp.Amount) > 0 {
+		max := total / int64(sh.hpaSpec.ScaleUp.Amount)
+		if total%int64(sh.hpaSpec.ScaleUp.Amount) > 0 {
 			max = max + 1
 		}
 		desired = replicas + int32(max)*sh.hpaSpec.ScaleUp.Amount
-	} else if ready <= sh.hpaSpec.ScaleDown.Threshold && replicas > sh.hpaSpec.MinReplicas {
+	} else if total <= sh.hpaSpec.ScaleDown.Threshold && replicas > sh.hpaSpec.MinReplicas {
 		desired = replicas - sh.hpaSpec.ScaleDown.Amount
 	} else {
 		desired = replicas

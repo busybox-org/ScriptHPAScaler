@@ -1,7 +1,6 @@
 package rabbitmq
 
 import (
-	"github.com/streadway/amqp"
 	k8sq1comv1 "github.com/xmapst/supersetscalers/api/v1"
 	"github.com/xmapst/supersetscalers/plugins"
 	"strings"
@@ -43,19 +42,5 @@ func (r *RabbitMQPlugin) Run() (int64, error) {
 	if strings.HasPrefix(r.Url, "http") {
 		return r.getQueueLengthFromAPI()
 	}
-	conn, err := amqp.Dial(r.Url)
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close()
-	ch, err := conn.Channel()
-	if err != nil {
-		return 0, err
-	}
-	defer ch.Close()
-	q, err := ch.QueueInspect(r.Queue)
-	if err != nil {
-		return 0, err
-	}
-	return int64(q.Messages), nil
+	return 0, plugins.ErrProtocol
 }
