@@ -9,8 +9,8 @@ require (
 	github.com/onsi/gomega v1.27.10
 	github.com/ringtail/go-cron v1.0.1-0.20201027122514-cfb21c105f50
 	github.com/yuin/gopher-lua v1.1.0
-	k8s.io/api v0.28.0
-	k8s.io/apimachinery v0.28.0
+	k8s.io/api v0.28.1
+	k8s.io/apimachinery v0.28.1
 	k8s.io/client-go v0.28.0
 	k8s.io/klog/v2 v2.100.1
 	sigs.k8s.io/controller-runtime v0.15.1
