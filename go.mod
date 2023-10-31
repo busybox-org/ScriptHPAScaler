@@ -3,7 +3,7 @@ module github.com/xmapst/supersetscalers
 go 1.18
 
 require (
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.29.0
