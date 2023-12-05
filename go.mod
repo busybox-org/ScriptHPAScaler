@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.30.0
 	github.com/ringtail/go-cron v1.0.1-0.20201027122514-cfb21c105f50
-	github.com/yuin/gopher-lua v1.1.0
+	github.com/yuin/gopher-lua v1.1.1
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
 	k8s.io/client-go v0.28.4
