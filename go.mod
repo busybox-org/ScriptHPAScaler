@@ -9,9 +9,9 @@ require (
 	github.com/onsi/gomega v1.30.0
 	github.com/ringtail/go-cron v1.0.1-0.20201027122514-cfb21c105f50
 	github.com/yuin/gopher-lua v1.1.1
-	k8s.io/api v0.28.4
+	k8s.io/api v0.29.0
 	k8s.io/apimachinery v0.29.0
-	k8s.io/client-go v0.28.4
+	k8s.io/client-go v0.29.0
 	k8s.io/klog/v2 v2.110.1
 	sigs.k8s.io/controller-runtime v0.16.3
 )
@@ -53,7 +53,7 @@ require (
 	go.uber.org/zap v1.25.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
