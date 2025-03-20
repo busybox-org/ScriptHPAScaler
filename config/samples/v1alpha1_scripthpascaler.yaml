@@ -1,0 +1,42 @@
+apiVersion: busybox.org/v1alpha1
+kind: ScriptHPAScaler
+metadata:
+  labels:
+    app.kubernetes.io/name: scripthpascaler
+    app.kubernetes.io/managed-by: kustomize
+  name: scripthpascaler-sample
+spec:
+  maxReplicas: 20
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx
+  script: |-
+    import (
+      "context"
+      "fmt"
+      "math"
+     "github.com/michaelklishin/rabbit-hole/v2"
+      "github.com/tidwall/gjson"
+      "k8s.io/klog/v2"
+    )
+
+    func EvalCall(ctx context.Context, params gjson.Result) (int64, error) {
+      client, err := rabbithole.NewClient("http://localhost:15672", "guest", "guest")
+      if err != nil {
+        klog.Errorln(err)
+        return 0, err
+      }
+      queue, err := client.GetQueue("/", "nginx")
+      if err != nil {
+        klog.Errorln(err)
+        return 0, err
+      }
+      replicas := params.Get("replicas").Int()
+      newReplicas := int64(math.Round(float64(queue.Messages / 1)))
+      if newReplicas != replicas {
+        return newReplicas, nil
+      }
+      return replicas, nil
+    }
