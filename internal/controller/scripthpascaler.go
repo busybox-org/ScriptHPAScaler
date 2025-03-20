@@ -32,6 +32,7 @@ import (
 
 // ScriptHPAScalerReconciler reconciles a ScriptHPAScaler object
 type ScriptHPAScalerReconciler struct {
+	Context context.Context
 	client.Client
 	Scheme *runtime.Scheme
 	manager.IManager
@@ -93,17 +94,12 @@ func (r *ScriptHPAScalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ScriptHPAScalerReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	var stopCh chan struct{}
 	r.IManager = manager.New(mgr)
-	go func(sm manager.IManager, stopCh chan struct{}) {
+	go func(sm manager.IManager) {
 		// wait for the cache to be synced
-		cache := mgr.GetCache()
-		if !cache.WaitForCacheSync(context.Background()) {
-			log.Fatalln("failed to wait for caches to sync")
-		}
-		sm.Run(stopCh)
-		<-stopCh
-	}(r.IManager, stopCh)
+		_ = mgr.GetCache().WaitForCacheSync(context.Background())
+		sm.Start(r.Context)
+	}(r.IManager)
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&busyboxorgv1alpha1.ScriptHPAScaler{}).
 		Named("scripthpascaler").

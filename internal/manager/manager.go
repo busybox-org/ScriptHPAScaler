@@ -38,7 +38,7 @@ import (
 
 type IManager interface {
 	ISelfManager
-	Run(stopChan chan struct{})
+	Start(ctx context.Context)
 	AddExecutor(namespace, name string) error
 	Clean(namespacedName string)
 	FilterItem(item busyboxorgv1alpha1.ScriptHPAScalerSpec) bool
@@ -171,21 +171,6 @@ func (m *sManager) Clean(namespacedName string) {
 	log.Infof("Remove ScriptHPAScaler executor %s", namespacedName)
 }
 
-func (m *sManager) initLoad() {
-	listOptions := &client.ListOptions{}
-	list := &busyboxorgv1alpha1.ScriptHPAScalerList{}
-	if err := m.client.List(context.TODO(), list, listOptions); err != nil {
-		log.Fatalf("init autoscaler manager failed, err: %v", err)
-	}
-	list.Items = m.filter(list.Items)
-	for _, item := range list.Items {
-		err := m.AddExecutor(item.Namespace, item.Name)
-		if err != nil {
-			log.Fatalf("init autoscaler manager failed, err: %v", err)
-		}
-	}
-}
-
 func (m *sManager) filter(items []busyboxorgv1alpha1.ScriptHPAScaler) []busyboxorgv1alpha1.ScriptHPAScaler {
 	var result []busyboxorgv1alpha1.ScriptHPAScaler
 	for _, item := range items {
@@ -206,9 +191,21 @@ func (m *sManager) FilterItem(item busyboxorgv1alpha1.ScriptHPAScalerSpec) bool 
 	return false
 }
 
-func (m *sManager) Run(stopChan chan struct{}) {
-	m.initLoad()
-	<-stopChan
+func (m *sManager) Start(ctx context.Context) {
+	listOptions := &client.ListOptions{}
+	list := &busyboxorgv1alpha1.ScriptHPAScalerList{}
+	if err := m.client.List(context.TODO(), list, listOptions); err != nil {
+		log.Fatalf("init autoscaler manager failed, err: %v", err)
+	}
+	list.Items = m.filter(list.Items)
+	for _, item := range list.Items {
+		err := m.AddExecutor(item.Namespace, item.Name)
+		if err != nil {
+			log.Warningf("init autoscaler manager failed, err: %v", err)
+		}
+	}
+	<-ctx.Done()
+	log.Infoln("ScriptHPAScaler manager is stopped")
 	m.cron.Stop()
 }
 
