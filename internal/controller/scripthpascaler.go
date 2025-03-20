@@ -37,15 +37,13 @@ type ScriptHPAScalerReconciler struct {
 	manager.IManager
 }
 
-// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=*,verbs=get;list;watch;update
 // +kubebuilder:rbac:groups=*,resources=*/scale,verbs=get;list;update;patch
 // +kubebuilder:rbac:groups=extensions,resources=*,verbs=get;list;watch;create;update
-// +kubebuilder:rbac:groups=apps,resources=*,verbs=get;list;watch;update
 // +kubebuilder:rbac:groups="",resources=events,verbs=get;list;watch;create;update;patch
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers/finalizers,verbs=update
+// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=busybox.org,resources=scripthpascalers,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
