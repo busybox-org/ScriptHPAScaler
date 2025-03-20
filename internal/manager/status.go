@@ -6,27 +6,29 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	watchtools "k8s.io/client-go/tools/watch"
 	log "k8s.io/klog/v2"
-
-	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
 )
 
-func (e *sExecutor) waitPodReady(item *busyboxorgv1alpha1.ScriptHPAScaler) {
-	var kind = item.Spec.ScaleTargetRef.Kind
-	var name = item.Spec.ScaleTargetRef.Name
-	log.Infof("%s/%s waiting for the expansion to complete", item.Namespace, name)
-	defer log.Infof("%s/%s expansion completed", item.Namespace, name)
-	e.EventRecorder().Event(item, v1.EventTypeWarning, "ScalingReplicaSet", "Waiting for the expansion to complete")
-	var gvr = e.generateGroupVersionResource(kind)
-	var fn = e.watchFnMap[kind]
+func (e *sExecutor) waitPodReady(gvr schema.GroupVersionResource, name string, eventFn func(message string)) {
+	log.Infof("%s/%s waiting for the expansion to complete", e.namespace, name)
+	defer log.Infof("%s/%s expansion completed", e.namespace, name)
+	eventFn("Waiting for the expansion to complete")
+	var fn func(obj runtime.Unstructured) (string, bool, error)
+	if gvr.Resource == "deployments" {
+		fn = e.watchDeployment
+	} else if gvr.Resource == "statefulsets" {
+		fn = e.watchStatefulSet
+	} else {
+		return
+	}
 	fieldSelector := fields.OneTermEqualSelector("metadata.name", name).String()
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -47,7 +49,7 @@ func (e *sExecutor) waitPodReady(item *busyboxorgv1alpha1.ScriptHPAScaler) {
 			if err != nil {
 				return false, err
 			}
-			e.EventRecorder().Event(item, v1.EventTypeNormal, "ScalingReplicaSet", status)
+			eventFn(status)
 			if done {
 				return true, nil
 			}
@@ -64,7 +66,7 @@ func (e *sExecutor) waitPodReady(item *busyboxorgv1alpha1.ScriptHPAScaler) {
 		log.Errorln(err)
 		return
 	}
-	e.EventRecorder().Event(item, v1.EventTypeNormal, "ScalingReplicaSet", "Expansion completed")
+	eventFn("Expansion completed")
 }
 
 func (e *sExecutor) watchDeployment(obj runtime.Unstructured) (string, bool, error) {

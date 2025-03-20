@@ -7,11 +7,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	log "k8s.io/klog/v2"
@@ -26,22 +24,11 @@ const (
 	defaultStabWindowTime = 3 * time.Minute
 )
 
-type watchFn func(obj runtime.Unstructured) (string, bool, error)
-
 type sExecutor struct {
 	ISelfManager
-	namespace  string
-	name       string
-	watchFnMap map[string]watchFn
-	running    int32
-}
-
-func (e *sExecutor) Name() string {
-	return e.name
-}
-
-func (e *sExecutor) Namespace() string {
-	return e.namespace
+	namespace string
+	name      string
+	running   int32
 }
 
 func (e *sExecutor) NamespacedName() string {
@@ -61,13 +48,13 @@ func (e *sExecutor) Run() {
 
 	instance := &busyboxorgv1alpha1.ScriptHPAScaler{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      e.Name(),
-			Namespace: e.Namespace(),
+			Name:      e.name,
+			Namespace: e.namespace,
 		},
 	}
 	err := e.Client().Get(context.TODO(), types.NamespacedName{
-		Namespace: e.Namespace(),
-		Name:      e.Name(),
+		Name:      e.name,
+		Namespace: e.namespace,
 	}, instance)
 	if err != nil {
 		log.Errorln(e.NamespacedName(), "get instance failed, err", err)
@@ -97,6 +84,11 @@ func (e *sExecutor) Run() {
 }
 
 func (e *sExecutor) scaleReplicas(item *busyboxorgv1alpha1.ScriptHPAScaler) (int32, error) {
+	var name = item.Spec.ScaleTargetRef.Name
+	var gvr, err = e.generateGroupVersionResource(item.Spec.ScaleTargetRef.APIVersion, item.Spec.ScaleTargetRef.Kind)
+	if err != nil {
+		return -1, err
+	}
 	// 解析稳定窗口，默认 3 分钟
 	// 如果稳定窗口超过 15 分钟，则取上限 15 分钟
 	timDuration, err := time.ParseDuration(item.Spec.StabilisationWindow)
@@ -105,10 +97,7 @@ func (e *sExecutor) scaleReplicas(item *busyboxorgv1alpha1.ScriptHPAScaler) (int
 	}
 	timDuration = max(minStabWindowTime, min(timDuration, maxStabWindowTime))
 
-	var kind = item.Spec.ScaleTargetRef.Kind
-	var name = item.Spec.ScaleTargetRef.Name
-
-	current, err := e.getReplicas(kind, name)
+	current, err := e.getReplicas(gvr.GroupResource(), name)
 	if err != nil {
 		log.Errorln(e.NamespacedName(), "get replicas failed, err", err)
 		return 0, err
@@ -137,21 +126,23 @@ func (e *sExecutor) scaleReplicas(item *busyboxorgv1alpha1.ScriptHPAScaler) (int
 		return -1, nil
 	}
 	log.Infof("%s replicas is %d, desired is %d, scaling %s", e.NamespacedName(), current, target, action)
-	err = e.updateReplicas(kind, name, target)
+	err = e.updateReplicas(gvr.GroupResource(), name, target)
 	if err != nil {
 		return -1, fmt.Errorf("failed to scale %v", err)
 	}
 
-	e.waitPodReady(item)
+	e.waitPodReady(gvr, name, func(message string) {
+		e.EventRecorder().Event(item, v1.EventTypeNormal, "ScalingReplicaSet", message)
+	})
 	return target, nil
 }
 
-func (e *sExecutor) updateReplicas(kind, name string, replicas int32) error {
-	newScale, err := e.ScaleClient().Scales(e.Namespace()).
-		Update(context.TODO(), e.generateGroupResource(kind), &autoscalingv1.Scale{
+func (e *sExecutor) updateReplicas(gr schema.GroupResource, name string, replicas int32) error {
+	newScale, err := e.ScaleClient().Scales(e.namespace).
+		Update(context.TODO(), gr, &autoscalingv1.Scale{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
-				Namespace: e.Namespace(),
+				Namespace: e.namespace,
 			},
 			Spec: autoscalingv1.ScaleSpec{
 				Replicas: replicas,
@@ -165,9 +156,9 @@ func (e *sExecutor) updateReplicas(kind, name string, replicas int32) error {
 	return nil
 }
 
-func (e *sExecutor) getReplicas(kind, name string) (replicas int32, err error) {
-	_scale, err := e.ScaleClient().Scales(e.Namespace()).
-		Get(context.TODO(), e.generateGroupResource(kind), name, metav1.GetOptions{})
+func (e *sExecutor) getReplicas(gr schema.GroupResource, name string) (replicas int32, err error) {
+	_scale, err := e.ScaleClient().Scales(e.namespace).
+		Get(context.TODO(), gr, name, metav1.GetOptions{})
 	if err == nil {
 		return _scale.Spec.Replicas, nil
 	}
@@ -175,16 +166,17 @@ func (e *sExecutor) getReplicas(kind, name string) (replicas int32, err error) {
 	return
 }
 
-func (e *sExecutor) generateGroupResource(kind string) (groupResource schema.GroupResource) {
-	return e.generateGroupVersionResource(kind).GroupResource()
-}
-
-func (e *sExecutor) generateGroupVersionResource(kind string) (groupResource schema.GroupVersionResource) {
+func (e *sExecutor) generateGroupVersionResource(gv, kind string) (schema.GroupVersionResource, error) {
+	_gv, err := schema.ParseGroupVersion(gv)
+	if err != nil {
+		return schema.GroupVersionResource{}, err
+	}
 	switch strings.ToLower(kind) {
 	case "deployment", "deployments":
-		groupResource = schema.GroupVersionResource{Group: appsv1.GroupName, Version: "v1", Resource: "deployments"}
+		return _gv.WithResource("deployments"), nil
 	case "statefulset", "statefulsets":
-		groupResource = schema.GroupVersionResource{Group: appsv1.GroupName, Version: "v1", Resource: "statefulsets"}
+		return _gv.WithResource("statefulsets"), nil
+	default:
+		return schema.GroupVersionResource{}, fmt.Errorf("unknown kind %s", kind)
 	}
-	return
 }

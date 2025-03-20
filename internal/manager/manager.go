@@ -228,10 +228,6 @@ func (m *sManager) AddExecutor(namespace, name string) error {
 		namespace:    namespace,
 		name:         name,
 	}
-	e.watchFnMap = map[string]watchFn{
-		"Deployment":  e.watchDeployment,
-		"StatefulSet": e.watchStatefulSet,
-	}
 
 	_, found := m.executorCache.Load(e.NamespacedName())
 	if found {
