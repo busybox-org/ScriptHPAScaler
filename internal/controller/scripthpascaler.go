@@ -26,8 +26,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	busyboxorgv1alpha1 "busybox.org/scripthpascaler/api/v1alpha1"
-	"busybox.org/scripthpascaler/internal/manager"
+	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
+	"github.com/busybox-org/scripthpascaler/internal/manager"
 )
 
 // ScriptHPAScalerReconciler reconciles a ScriptHPAScaler object

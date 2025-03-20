@@ -16,8 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	log "k8s.io/klog/v2"
 
-	busyboxorgv1alpha1 "busybox.org/scripthpascaler/api/v1alpha1"
-	"busybox.org/scripthpascaler/internal/yaegi"
+	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
+	"github.com/busybox-org/scripthpascaler/internal/yaegi"
 )
 
 const (

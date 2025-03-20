@@ -33,7 +33,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	busyboxorgv1alpha1 "busybox.org/scripthpascaler/api/v1alpha1"
+	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
 )
 
 type IManager interface {

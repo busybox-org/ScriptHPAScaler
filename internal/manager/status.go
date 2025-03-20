@@ -16,7 +16,7 @@ import (
 	watchtools "k8s.io/client-go/tools/watch"
 	log "k8s.io/klog/v2"
 
-	busyboxorgv1alpha1 "busybox.org/scripthpascaler/api/v1alpha1"
+	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
 )
 
 func (e *sExecutor) waitPodReady(item *busyboxorgv1alpha1.ScriptHPAScaler) {

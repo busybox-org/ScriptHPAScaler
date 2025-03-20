@@ -37,8 +37,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	busyboxorgv1alpha1 "busybox.org/scripthpascaler/api/v1alpha1"
-	"busybox.org/scripthpascaler/internal/controller"
+	busyboxorgv1alpha1 "github.com/busybox-org/scripthpascaler/api/v1alpha1"
+	"github.com/busybox-org/scripthpascaler/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 

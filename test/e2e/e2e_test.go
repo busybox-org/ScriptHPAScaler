@@ -27,7 +27,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"busybox.org/scripthpascaler/test/utils"
+	"github.com/busybox-org/scripthpascaler/test/utils"
 )
 
 // namespace where the project is deployed in

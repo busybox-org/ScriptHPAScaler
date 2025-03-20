@@ -6,7 +6,7 @@ domain: busybox.org
 layout:
 - go.kubebuilder.io/v4
 projectName: scripthpascaler
-repo: busybox.org/scripthpascaler
+repo: github.com/busybox-org/scripthpascaler
 resources:
 - api:
     crdVersion: v1
@@ -14,6 +14,6 @@ resources:
   controller: true
   domain: busybox.org
   kind: ScriptHPAScaler
-  path: busybox.org/scripthpascaler/api/v1alpha1
+  path: github.com/busybox-org/scripthpascaler/api/v1alpha1
   version: v1alpha1
 version: "3"

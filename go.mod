@@ -1,4 +1,4 @@
-module busybox.org/scripthpascaler
+module github.com/busybox-org/scripthpascaler
 
 go 1.23.0
 

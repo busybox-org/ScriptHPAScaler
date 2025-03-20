@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"busybox.org/scripthpascaler/test/utils"
+	"github.com/busybox-org/scripthpascaler/test/utils"
 )
 
 var (

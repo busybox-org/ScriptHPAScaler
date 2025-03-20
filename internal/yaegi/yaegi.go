@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	log "k8s.io/klog/v2"
 
-	"busybox.org/scripthpascaler/internal/yaegi/lib"
+	"github.com/busybox-org/scripthpascaler/internal/yaegi/lib"
 )
 
 func Eval(ctx context.Context, script string, params map[string]any) (int64, error) {
