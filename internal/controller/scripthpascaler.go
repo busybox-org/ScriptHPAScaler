@@ -59,7 +59,7 @@ func (r *ScriptHPAScalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Infof("HorizontalPodAutoscaler %s in %s namespace is deleted", req.Name, req.Namespace)
+			log.Infof("ScriptHPAScaler %s in %s namespace is deleted", req.Name, req.Namespace)
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
 			go r.Clean(req.NamespacedName.String())
@@ -84,10 +84,10 @@ func (r *ScriptHPAScalerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// update the status
 	err = r.UpdateStatus(instance, status)
 	if err != nil {
-		log.Errorf("failed to update status of HorizontalPodAutoscaler %s,because of %v", req.NamespacedName, err)
+		log.Errorf("failed to update status of ScriptHPAScaler %s,because of %v", req.NamespacedName, err)
 		return ctrl.Result{}, err
 	}
-	log.Infof("HorizontalPodAutoscaler %s is updated", req.NamespacedName)
+	log.Infof("ScriptHPAScaler %s is updated", req.NamespacedName)
 	return ctrl.Result{}, nil
 }
 

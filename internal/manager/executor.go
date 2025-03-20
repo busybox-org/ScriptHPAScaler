@@ -80,7 +80,7 @@ func (e *sExecutor) Run() {
 		return
 	}
 	log.Errorln(e.NamespacedName(), "update instance status failed, err", err)
-	e.EventRecorder().Event(instance, v1.EventTypeWarning, "ScalingReplicaSet", fmt.Sprintf("Can't update HorizontalPodAutoscaler status: %v", err))
+	e.EventRecorder().Event(instance, v1.EventTypeWarning, "ScalingReplicaSet", fmt.Sprintf("Can't update ScriptHPAScaler status: %v", err))
 }
 
 func (e *sExecutor) scaleReplicas(item *busyboxorgv1alpha1.ScriptHPAScaler) (int32, error) {

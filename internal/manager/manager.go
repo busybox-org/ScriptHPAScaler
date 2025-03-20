@@ -168,7 +168,7 @@ func (m *sManager) Clean(namespacedName string) {
 	delete(m.members, namespacedName)
 	// remove executor
 	m.cron.Remove(id)
-	log.Infof("Remove HorizontalPodAutoscaler executor %s", namespacedName)
+	log.Infof("Remove ScriptHPAScaler executor %s", namespacedName)
 }
 
 func (m *sManager) initLoad() {
@@ -240,7 +240,7 @@ func (m *sManager) AddExecutor(namespace, name string) error {
 		return err
 	}
 	m.executorCache.LoadOrStore(e.NamespacedName(), id)
-	log.Infof("HorizontalPodAutoscaler %s is created", e.NamespacedName())
+	log.Infof("ScriptHPAScaler %s is created", e.NamespacedName())
 
 	return nil
 }
