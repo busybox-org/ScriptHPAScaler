@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: scripthpascaler-controller
-  newTag: f48f9d1
+  newTag: latest

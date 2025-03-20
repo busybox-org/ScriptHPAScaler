@@ -245,11 +245,11 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: scripthpascaler
-  name: scripthpascaler-manager-rolebinding
+  name: scripthpascaler-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: manager-role
+  name: scripthpascaler-controller
 subjects:
 - kind: ServiceAccount
   name: scripthpascaler-controller
@@ -284,7 +284,7 @@ spec:
         - --health-probe-bind-address=:8081
         command:
         - /manager
-        image: scripthpascaler-controller:f48f9d1
+        image: scripthpascaler-controller:latest
         livenessProbe:
           httpGet:
             path: /healthz
